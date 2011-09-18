@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.SUBSCRIBED_FEEDS_READ" />
     <uses-permission android:name="android.permission.SUBSCRIBED_FEEDS_WRITE" />
 
-    <application android:process="android.process.acore"
+    <application android:process="android.process.contacts"
         android:label="@string/app_label"
         android:icon="@drawable/app_icon">
 
