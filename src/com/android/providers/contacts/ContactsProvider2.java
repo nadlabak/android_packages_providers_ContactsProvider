@@ -280,6 +280,7 @@ public class ContactsProvider2 extends AbstractContactsProvider
     private static final int CONTACTS_LOOKUP_STREAM_ITEMS = 1023;
     private static final int CONTACTS_LOOKUP_ID_STREAM_ITEMS = 1024;
     private static final int CONTACTS_FREQUENT = 1025;
+    private static final int CONTACTS_DELETE_USAGE = 1026;
 
     private static final int RAW_CONTACTS = 2002;
     private static final int RAW_CONTACTS_ID = 2003;
@@ -1126,6 +1127,7 @@ public class ContactsProvider2 extends AbstractContactsProvider
                 CONTACTS_STREQUENT_FILTER);
         matcher.addURI(ContactsContract.AUTHORITY, "contacts/group/*", CONTACTS_GROUP);
         matcher.addURI(ContactsContract.AUTHORITY, "contacts/frequent", CONTACTS_FREQUENT);
+        matcher.addURI(ContactsContract.AUTHORITY, "contacts/delete_usage", CONTACTS_DELETE_USAGE);
 
         matcher.addURI(ContactsContract.AUTHORITY, "raw_contacts", RAW_CONTACTS);
         matcher.addURI(ContactsContract.AUTHORITY, "raw_contacts/#", RAW_CONTACTS_ID);
@@ -3452,6 +3454,21 @@ public class ContactsProvider2 extends AbstractContactsProvider
         }
     }
 
+    private int deleteDataUsage() {
+        final SQLiteDatabase db = mActiveDb.get();
+        db.execSQL("UPDATE " + Tables.RAW_CONTACTS + " SET " +
+                Contacts.TIMES_CONTACTED + "=0," +
+                Contacts.LAST_TIME_CONTACTED + "=NULL"
+            );
+        db.execSQL("UPDATE " + Tables.CONTACTS + " SET " +
+                Contacts.TIMES_CONTACTED + "=0," +
+                Contacts.LAST_TIME_CONTACTED + "=NULL"
+            );
+        db.delete(Tables.DATA_USAGE_STAT, null, null);
+
+        return 1;
+    }
+
     @Override
     protected int deleteInTransaction(Uri uri, String selection, String[] selectionArgs) {
         if (VERBOSE_LOGGING) {
@@ -3542,6 +3559,10 @@ public class ContactsProvider2 extends AbstractContactsProvider
                 } finally {
                     c.close();
                 }
+            }
+
+            case CONTACTS_DELETE_USAGE: {
+                return deleteDataUsage();
             }
 
             case RAW_CONTACTS:
